@@ -2,13 +2,19 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
+using System.Reflection;
 
 namespace GenerateImagePagesFromCSV
 {
     class Program
     {
+        public static string generatedDir = string.Empty;
         static void Main(string[] args)
         {
+
+
+            generatedDir = Path.Combine(System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "generated");
+            
             List<ImageData> values = File.ReadAllLines("data.csv")
                                            .Skip(1)
                                            .Select(v => ImageData.FromCSV(v))
@@ -16,6 +22,11 @@ namespace GenerateImagePagesFromCSV
 
 
             var distinctProducts = values.Select(x => x.ImageCaption).Distinct().ToList();
+
+            if (!Directory.Exists(generatedDir))
+            {
+                Directory.CreateDirectory(generatedDir);
+            }
 
             foreach (var p in distinctProducts)
             {
@@ -36,16 +47,16 @@ namespace GenerateImagePagesFromCSV
 
                     if(a == allProducts.First())
                     {
-                        paging += "<li><a href='./" + a.FileName  + "'>&laquo;</a></li>" + Environment.NewLine;
+                        paging += "<li><a href='./" + a.FileName  + "'>" + a.ImageViewName  + " Image </a></li>" + Environment.NewLine;
                     }
                     else if (a == allProducts.Last())
                     {
-                        paging += "<li><a href='./" + a.FileName + "'>&raquo;</a></li>" + Environment.NewLine;
+                        paging += "<li><a href='./" + a.FileName + "'>" + a.ImageViewName + " Image </a></li>" + Environment.NewLine;
 
                     }
                     else
                     {
-                        paging += "<li><a href='./" + a.FileName + "'>" + counter.ToString() +"</a></li>" + Environment.NewLine;
+                        paging += "<li><a href='./" + a.FileName + "'>" + a.ImageViewName + " Image </a></li>" + Environment.NewLine;
 
                         counter++;
                     }
@@ -72,7 +83,7 @@ namespace GenerateImagePagesFromCSV
                     html = html.Replace("***PAGING***", paging);
 
 
-                    File.WriteAllText(a.FileName, html);
+                    File.WriteAllText(generatedDir + "/" + a.FileName, html);
                 }
             }
 
